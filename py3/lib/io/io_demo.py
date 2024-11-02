@@ -227,58 +227,60 @@ class TestBytesIO(unittest.TestCase):
         """
         # No initial bytes.
         s = io.BytesIO()
-        self.assertEqual(s.getvalue(), b'')
+        self.assertEqual(s.getvalue(), b"")
 
         # Some initial bytes.
-        s = io.BytesIO(initial_bytes=b'abc')
-        self.assertEqual(s.getvalue(), b'abc')
+        s = io.BytesIO(initial_bytes=b"abc")
+        self.assertEqual(s.getvalue(), b"abc")
 
     def test_getbuffer(self):
         """Test `getbuffer` that returns a readable and writable view
         """
-        initial_bytes = b'012345'
+        initial_bytes = b"012345"
         s = io.BytesIO(initial_bytes=initial_bytes)
         view = s.getbuffer()
 
         # `view[n]` returns the binary value of the (n-1)th byte.
         self.assertEqual(view[0], initial_bytes[0])
-        self.assertEqual(view[len(initial_bytes)-1], initial_bytes[-1])
+        self.assertEqual(view[len(initial_bytes) - 1], initial_bytes[-1])
 
         # `view[n:m]` returns an array of bytes.
         self.assertEqual(view[0:1], initial_bytes[0:1])
         self.assertEqual(view[2:4], initial_bytes[2:4])
 
         # Write via a view.
-        view[0] = ord(b'a')
+        view[0] = ord(b"a")
         value = s.getvalue()
         self.assertEqual(value, b"a12345")
 
-        view[1:] = b'bcdef'
+        view[1:] = b"bcdef"
         value = s.getvalue()
         self.assertEqual(value, b"abcdef")
 
     def test_getvalue(self):
-        initial_bytes = b'abc'
+        initial_bytes = b"abc"
         s = io.BytesIO(initial_bytes=initial_bytes)
         self.assertEqual(s.getvalue(), initial_bytes)
 
     def test_read1(self):
-        initial_bytes = b'abc'
+        initial_bytes = b"abc"
 
         def _read1(size):
             s = io.BytesIO(initial_bytes=initial_bytes)
             return s.read1(size)
 
-        read1_test_case = collections.namedtuple("read1_test_case", ["size", "expected"])
+        read1_test_case = collections.namedtuple(
+            "read1_test_case", ["size", "expected"]
+        )
         test_cases = [
             # If `size` is None or negative, read until EOF.
             read1_test_case(size=None, expected=initial_bytes),
             read1_test_case(size=-1, expected=initial_bytes),
             # If `size` is zero, read nothing.
-            read1_test_case(size=0, expected=b''),
+            read1_test_case(size=0, expected=b""),
             # If `size` is positive but not longer than the length of the data,
             # read the specified number of bytes.
-            read1_test_case(size=1, expected=chr(initial_bytes[0]).encode('utf-8')),
+            read1_test_case(size=1, expected=chr(initial_bytes[0]).encode("utf-8")),
             read1_test_case(size=3, expected=initial_bytes[0:3]),
             read1_test_case(size=30, expected=initial_bytes),
         ]
