@@ -34,14 +34,11 @@ class Test_bytearray(unittest.TestCase):
         self.assertEqual(len(ba), 0)
 
         # If provided a negative integer, it raises `ValueError`.
-        self.assertRaisesRegex(
-            ValueError,
-            r"negative count",
-            bytearray,
-            source=-1,
-        )
+        self.assertRaisesRegex(ValueError, r"negative count", bytearray, source=-1)
 
     def test_bytearray_range(self):
+        """Test case: `source` is a list of integers.
+        """
         # If `source` is a list of integers (0 <= n <= 255), then the bytearray
         # is initialized from the list of integers.
         ba = bytearray(range(256))
@@ -61,6 +58,8 @@ class Test_bytearray(unittest.TestCase):
                 )
 
     def test_bytearray_str(self):
+        """Test case: `source` is a string.
+        """
         # If `source` is a string but `encoding` is not provided, a `TypeError`
         # will be raised.
         self.assertRaisesRegex(
@@ -126,8 +125,86 @@ class Test_bytearray(unittest.TestCase):
         _err_handling_scheme_replace()
 
     def test_bytearray_buffer(self):
-        ba = bytearray(b'hello')
-        pass
+        """Test case: `source` implements the buffer interface.
+        """
+        # `source` is a bytes object.
+        d = b"hello"
+        ba = bytearray(source=d)
+        self.assertEqual(len(ba), len(d))
+        for b1, b2 in zip(ba, d):
+            self.assertEqual(b1, b2)
+
+        # `source` is another bytearray.
+        ba2 = bytearray(source=ba)
+        self.assertEqual(len(ba2), len(ba))
+        for b1, b2 in zip(ba, ba2):
+            self.assertEqual(b1, b2)
+
+    def test_fromhex(self):
+        for string in (
+            "4849",
+            " 4849",
+            "4849 ",
+            "48 49",
+            " 48 49",
+            "48 49 ",
+            " 48 49 ",
+            "\t4849",
+            "4849\t",
+            "48\t49",
+            "\t48\t49",
+            "48\t49\t",
+            "\t48\t49\t",
+        ):
+            with self.subTest(string=string):
+                ba = bytearray.fromhex(string)
+                self.assertEqual(ba[0], 0x48)
+                self.assertEqual(ba[1], 0x49)
+
+    def test_hex(self):
+        source = [0x01, 0x02, 0x03, 0x04, 0x05]
+
+        for sep, bytes_per_sep, expected in [
+            ("_", 0, "0102030405"),
+            ("_", 1, "01_02_03_04_05"),
+            # Interesting... So it looks like the separator is applied from the
+            # last byte back to the first byte.
+            ("_", 2, "01_0203_0405"),
+            ("_", 3, "0102_030405"),
+            ("_", 4, "01_02030405"),
+            # When `bytes_per_sep` is the same as the number of the bytes, it's
+            # essentially equivalent to `bytes_per_sep == 0`.
+            ("_", 5, "0102030405"),
+            # When `bytes_per_sep` is more than the number of the bytes, it's
+            # essentially ineffective.
+            ("_", 6, "0102030405"),
+        ]:
+            with self.subTest(sep=sep, bytes_per_sep=bytes_per_sep):
+                b = bytearray(source=source)
+                self.assertEqual(b[0], 0x01)
+                self.assertEqual(b[4], 0x05)
+                s = b.hex(sep=sep, bytes_per_sep=bytes_per_sep)
+                self.assertEqual(s, expected)
+
+    def test_slices(self):
+        b = bytearray(b'0123')
+
+        # If we only get one particular element in bytearray, it is an integer.
+        self.assertIsInstance(b[0], int)
+        self.assertEqual(b[0], ord('0'))
+
+        # If we get a range of elements in bytearray, even if it has only one
+        # element, it's still a bytearray.
+        self.assertIsInstance(b[0:1], bytearray)
+        self.assertEqual(len(b[0:1]), 1)
+        self.assertEqual(b[0:1].hex(), "30")
+
+    def test_convert_to_list(self):
+        b = bytearray(b'0123')
+        # Convert b into a list of integers.
+        n = list(b)
+        expected = [ord('0'), ord('1'), ord('2'), ord('3')]
+        self.assertListEqual(n, expected)
 
 
 if __name__ == "__main__":
