@@ -290,6 +290,72 @@ class TestBytesIO(unittest.TestCase):
                 r = _read1(tc.size)
                 self.assertEqual(r, tc.expected)
 
+    def test_readinto1(self):
+        initial_bytes = b"hello, world"
+
+        def _readinto1(buf_size):
+            # Allocate a bytearray of the specified size. This will be the
+            # maximal size that `readinto1` can write to the bytearray.
+            b = bytearray(buf_size)
+            s = io.BytesIO(initial_bytes=initial_bytes)
+            num = s.readinto1(b)
+            return num, b
+
+        expected_30 = bytearray(30)
+        expected_30[0:len(initial_bytes)] = initial_bytes
+
+        readinto1_test_case = collections.namedtuple(
+            "readinto1_test_case", ["buf_size", "expected_num", "expected_bytes"]
+        )
+        test_cases = [
+            # If `buf_size` is zero, read into nothing because there is no space
+            # for the target bytearry to hold anything.
+            readinto1_test_case(buf_size=0, expected_num=0, expected_bytes=b''),
+            # If `buf_size` is positive but smaller than the length of the data,
+            # then read as many bytes as possible.
+            readinto1_test_case(buf_size=1, expected_num=1, expected_bytes=b'h'),
+            readinto1_test_case(buf_size=3, expected_num=3, expected_bytes=b'hel'),
+            # If `buf_size` is large enough to hold all the data, then read all
+            # of them.
+            readinto1_test_case(buf_size=30, expected_num=len(initial_bytes), expected_bytes=expected_30),
+        ]
+
+        for tc in test_cases:
+            with self.subTest(buf_size=tc.buf_size):
+                num_read, b = _readinto1(buf_size=tc.buf_size)
+                self.assertEqual(num_read, tc.expected_num)
+                self.assertEqual(b, tc.expected_bytes)
+
+
+class TestBufferedReader(unittest.TestCase):
+    # TODO(ywen): Implement me!
+    pass
+
+
+class TestBufferedWriter(unittest.TestCase):
+    # TODO(ywen): Implement me!
+    pass
+
+
+class TestBufferedRandom(unittest.TestCase):
+    # TODO(ywen): Implement me!
+    pass
+
+
+class TestBufferedRWPair(unittest.TestCase):
+    # TODO(ywen): Implement me!
+    pass
+
+
+class TestTextIOWrapper(unittest.TestCase):
+    # TODO(ywen): Implement me!
+    pass
+
+
+class TestStringIO(unittest.TestCase):
+    # TODO(ywen): Implement me!
+    pass
+
 
 if __name__ == "__main__":
     unittest.main()
