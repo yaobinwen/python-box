@@ -13,8 +13,7 @@ class Test_bytearray(unittest.TestCase):
     """
 
     def test_bytearray_empty(self):
-        """Test case: `source` is not provided.
-        """
+        """Test case: `source` is not provided."""
         # Create an empty instance.
         ba = bytearray()
         self.assertEqual(len(ba), 0)
@@ -37,8 +36,7 @@ class Test_bytearray(unittest.TestCase):
         self.assertRaisesRegex(ValueError, r"negative count", bytearray, source=-1)
 
     def test_bytearray_range(self):
-        """Test case: `source` is a list of integers.
-        """
+        """Test case: `source` is a list of integers."""
         # If `source` is a list of integers (0 <= n <= 255), then the bytearray
         # is initialized from the list of integers.
         ba = bytearray(range(256))
@@ -58,8 +56,7 @@ class Test_bytearray(unittest.TestCase):
                 )
 
     def test_bytearray_str(self):
-        """Test case: `source` is a string.
-        """
+        """Test case: `source` is a string."""
         # If `source` is a string but `encoding` is not provided, a `TypeError`
         # will be raised.
         self.assertRaisesRegex(
@@ -125,8 +122,7 @@ class Test_bytearray(unittest.TestCase):
         _err_handling_scheme_replace()
 
     def test_bytearray_buffer(self):
-        """Test case: `source` implements the buffer interface.
-        """
+        """Test case: `source` implements the buffer interface."""
         # `source` is a bytes object.
         d = b"hello"
         ba = bytearray(source=d)
@@ -187,11 +183,11 @@ class Test_bytearray(unittest.TestCase):
                 self.assertEqual(s, expected)
 
     def test_slices(self):
-        b = bytearray(b'0123')
+        b = bytearray(b"0123")
 
         # If we only get one particular element in bytearray, it is an integer.
         self.assertIsInstance(b[0], int)
-        self.assertEqual(b[0], ord('0'))
+        self.assertEqual(b[0], ord("0"))
 
         # If we get a range of elements in bytearray, even if it has only one
         # element, it's still a bytearray.
@@ -200,10 +196,10 @@ class Test_bytearray(unittest.TestCase):
         self.assertEqual(b[0:1].hex(), "30")
 
     def test_convert_to_list(self):
-        b = bytearray(b'0123')
+        b = bytearray(b"0123")
         # Convert b into a list of integers.
         n = list(b)
-        expected = [ord('0'), ord('1'), ord('2'), ord('3')]
+        expected = [ord("0"), ord("1"), ord("2"), ord("3")]
         self.assertListEqual(n, expected)
 
 
