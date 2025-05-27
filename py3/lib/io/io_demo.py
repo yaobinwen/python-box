@@ -48,8 +48,7 @@ class Test_text_encoding(unittest.TestCase):
     """
 
     def test_encoding_not_None(self):
-        """Test case: `encoding` is not None.
-        """
+        """Test case: `encoding` is not None."""
         # When `encoding` is not None, it returns whatever is given to
         # `encoding`.
         encoding = io.text_encoding("something")
@@ -57,8 +56,7 @@ class Test_text_encoding(unittest.TestCase):
 
     @mkdtemp(prefix=DTEMP_PREFIX)
     def test_encoding_None(self, dtemp):
-        """Test case: `encoding` is None.
-        """
+        """Test case: `encoding` is None."""
         # This test requires `sys.flags.warn_default_encoding` be set to True.
         self.assertTrue(bool(sys.flags.warn_default_encoding))
 
@@ -150,8 +148,7 @@ class TestFileIO(unittest.TestCase):
 
     @mkdtemp(prefix=DTEMP_PREFIX)
     def test_closefd_True(self, dtemp):
-        """Test case: `closefd=True`
-        """
+        """Test case: `closefd=True`"""
         ftmp, content = self._set_up(dtemp=dtemp, filename="test_closefd_True.txt")
 
         buffered_reader = ftmp.open(mode="rb")
@@ -175,8 +172,7 @@ class TestFileIO(unittest.TestCase):
 
     @mkdtemp(prefix=DTEMP_PREFIX)
     def test_closefd_False(self, dtemp):
-        """Test case: `closefd=False`
-        """
+        """Test case: `closefd=False`"""
         ftmp, content = self._set_up(dtemp=dtemp, filename="test_closefd_False.txt")
 
         buffered_reader = ftmp.open(mode="rb")
@@ -192,8 +188,7 @@ class TestFileIO(unittest.TestCase):
 
     @mkdtemp(prefix=DTEMP_PREFIX)
     def test_opener_not_None(self, dtemp):
-        """Test case: `opener` is not None.
-        """
+        """Test case: `opener` is not None."""
         ftmp, content = self._set_up(dtemp=dtemp, filename="test_opener_not_None.txt")
 
         def _opener(name, flags):
@@ -210,8 +205,7 @@ class TestFileIO(unittest.TestCase):
 
     @mkdtemp(prefix=DTEMP_PREFIX)
     def test_fd_not_inheritable(self, dtemp):
-        """Test case: returned file descriptor is not inheritable.
-        """
+        """Test case: returned file descriptor is not inheritable."""
         ftmp, content = self._set_up(
             dtemp=dtemp, filename="test_fd_not_inheritable.txt"
         )
@@ -223,8 +217,7 @@ class TestFileIO(unittest.TestCase):
 
 class TestBytesIO(unittest.TestCase):
     def test_BytesIO_initial_bytes(self):
-        """Test `BytesIO`'s constructor.
-        """
+        """Test `BytesIO`'s constructor."""
         # No initial bytes.
         s = io.BytesIO()
         self.assertEqual(s.getvalue(), b"")
@@ -234,8 +227,7 @@ class TestBytesIO(unittest.TestCase):
         self.assertEqual(s.getvalue(), b"abc")
 
     def test_getbuffer(self):
-        """Test `getbuffer` that returns a readable and writable view
-        """
+        """Test `getbuffer` that returns a readable and writable view"""
         initial_bytes = b"012345"
         s = io.BytesIO(initial_bytes=initial_bytes)
         view = s.getbuffer()
@@ -302,7 +294,7 @@ class TestBytesIO(unittest.TestCase):
             return num, b
 
         expected_30 = bytearray(30)
-        expected_30[0:len(initial_bytes)] = initial_bytes
+        expected_30[0 : len(initial_bytes)] = initial_bytes
 
         readinto1_test_case = collections.namedtuple(
             "readinto1_test_case", ["buf_size", "expected_num", "expected_bytes"]
@@ -310,14 +302,16 @@ class TestBytesIO(unittest.TestCase):
         test_cases = [
             # If `buf_size` is zero, read into nothing because there is no space
             # for the target bytearry to hold anything.
-            readinto1_test_case(buf_size=0, expected_num=0, expected_bytes=b''),
+            readinto1_test_case(buf_size=0, expected_num=0, expected_bytes=b""),
             # If `buf_size` is positive but smaller than the length of the data,
             # then read as many bytes as possible.
-            readinto1_test_case(buf_size=1, expected_num=1, expected_bytes=b'h'),
-            readinto1_test_case(buf_size=3, expected_num=3, expected_bytes=b'hel'),
+            readinto1_test_case(buf_size=1, expected_num=1, expected_bytes=b"h"),
+            readinto1_test_case(buf_size=3, expected_num=3, expected_bytes=b"hel"),
             # If `buf_size` is large enough to hold all the data, then read all
             # of them.
-            readinto1_test_case(buf_size=30, expected_num=len(initial_bytes), expected_bytes=expected_30),
+            readinto1_test_case(
+                buf_size=30, expected_num=len(initial_bytes), expected_bytes=expected_30
+            ),
         ]
 
         for tc in test_cases:
