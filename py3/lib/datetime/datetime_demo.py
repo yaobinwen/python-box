@@ -166,8 +166,7 @@ class Test_timedelta(unittest.TestCase):
         self.assertEqual(td.microseconds, 20 + ms_to_us)
 
     def test_calculated_from_datetime(self):
-        """Demo of calculating time delta from two `datetime` objects.
-        """
+        """Demo of calculating time delta from two `datetime` objects."""
         dt1 = datetime(
             year=2024,
             month=4,
