@@ -33,6 +33,7 @@ docker run \
   -it --rm \
   --name my-running-script \
   -v "$PWD":/usr/src/myapp \
+  -e "PYTHONPATH=/usr/src/myapp" \
   -w /usr/src/myapp \
   "python:$PY_VER" \
   python "$@" "$PY_FILE"
