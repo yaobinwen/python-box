@@ -349,8 +349,32 @@ class TestTextIOWrapper(unittest.TestCase):
 
 
 class TestStringIO(unittest.TestCase):
-    # TODO(ywen): Implement me!
-    pass
+    def test_StringIO_initial_value(self):
+        """Test `StringIO`'s constructor"""
+        # No initial value.
+        s = io.StringIO()
+        self.assertEqual(s.getvalue(), "")
+
+        # Some initial value.
+        s = io.StringIO(initial_value="abc")
+        self.assertEqual(s.getvalue(), "abc")
+
+    def test_write(self):
+        """Test `StringIO.write"""
+        # After the `StringIO` object is constructed, the writing position is
+        # at the beginning of the buffer, so writing new content will overwrite
+        # existing content.
+        s = io.StringIO(initial_value="abc")
+        self.assertEqual(s.getvalue(), "abc")
+        s.write("def")
+        self.assertEqual(s.getvalue(), "def")
+
+        # Call `seek` to adjust the writing position.
+        s = io.StringIO(initial_value="abc")
+        self.assertEqual(s.getvalue(), "abc")
+        s.seek(pos=0, whence=io.SEEK_END)
+        s.write("def")
+        self.assertEqual(s.getvalue(), "abcdef")
 
 
 if __name__ == "__main__":
