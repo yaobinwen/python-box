@@ -58,6 +58,8 @@ class Test_text_encoding(unittest.TestCase):
     def test_encoding_None(self, dtemp):
         """Test case: `encoding` is None."""
         # This test requires `sys.flags.warn_default_encoding` be set to True.
+        # Run the Python interpreter with `-X warn_default_encoding` to enable
+        # the warning.
         self.assertTrue(bool(sys.flags.warn_default_encoding))
 
         utf8_mode = bool(sys.flags.utf8_mode)
