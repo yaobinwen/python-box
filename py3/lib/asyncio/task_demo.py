@@ -5,9 +5,14 @@ This document is referred to as `DOC` in the code.
 """
 
 import asyncio
+import functools
+import io
+import math
 import signal
 import time
 import unittest
+
+from collections.abc import Callable
 
 
 class TestTasks(unittest.TestCase):
@@ -36,44 +41,78 @@ class TestTasks(unittest.TestCase):
         event_loop.run_until_complete(t)
         self.assertEqual(A, 3)
 
+    def _wait_for(
+        self,
+        *,
+        check: Callable,
+        sync_sleep: bool = True,
+        sleep_s: float = 0.1,
+        timeout_s: float = 3,
+        event_loop=None,
+    ):
+        iterations = math.ceil(timeout_s / sleep_s)
+        timed_out = True
+        for i in range(iterations):
+            if sync_sleep:
+                time.sleep(sleep_s)
+            else:
+                event_loop.run_until_complete(asyncio.sleep(sleep_s))
+            if check():
+                timed_out = False
+                break
+
+        return timed_out
+
     def test_creating_does_not_run_a_task(self):
-        """Show that creating a task does not run it until the task is awaited."""
-        B = 1
+        """Show that creating a task does not run the wrapped coroutine unless
+        it's awaited.
+        """
 
-        async def incB(n: int) -> int:
-            nonlocal B
+        class _Demo:
+            def __init__(self):
+                self.strbuf = io.StringIO()
 
-            # We don't start to execute the increment immediately.
-            time.sleep(0.5)
+            async def update_str(self, N: int):
+                for i in range(0, N):
+                    self.strbuf.write(str(i))
+                    # Sleep a bit so this method can't finish that quickly.
+                    await asyncio.sleep(0.5)
 
-            B += n
-            return B
+        d = _Demo()
+        self.assertEqual(d.strbuf.getvalue(), "")
 
         # Calling the coroutine function `incB` only returns a coroutine object
         # but does not execute it.
-        co = incB(2)
+        coro = d.update_str(N=3)
 
         # `asyncio.create_task` starts to execute the coroutine immediately but
         # its a concurrent execution so it doesn't block the caller's thread.
         event_loop = asyncio.new_event_loop()
-        t = event_loop.create_task(co)
+        t = event_loop.create_task(coro)
 
-        # Because `co` is not executed, `B` is still 1.
-        self.assertEqual(B, 1)
+        def _check_completion(d: _Demo, expected_value: str):
+            return d.strbuf.getvalue() == expected_value
 
-        # We wait for at most 3 seconds for the task to complete.
-        async_sleep_seconds = 0.1
-        timeout_in_seconds = 3
-        iterations = int(timeout_in_seconds / async_sleep_seconds)
-        timed_out = True
-        for i in range(iterations):
-            event_loop.run_until_complete(asyncio.sleep(async_sleep_seconds))
-            if B == 3:
-                timed_out = False
-                break
+        # Wait for 3 seconds synchronously without running any event loop.
+        # As a result, the `update_str` couldn't be completed.
+        timed_out = self._wait_for(
+            check=functools.partial(_check_completion, d=d, expected_value="012"),
+            sync_sleep=True,
+            event_loop=None,
+        )
+        self.assertTrue(timed_out)
+        self.assertEqual(d.strbuf.getvalue(), "")
 
-        self.assertFalse(timed_out, "Task did not complete in time.")
-        self.assertEqual(B, 3)
+        # Wait for 3 second asynchronously. Because the event loop runs, it
+        # also runs `update_str` so it can complete.
+        timed_out = self._wait_for(
+            check=functools.partial(_check_completion, d=d, expected_value="012"),
+            sync_sleep=False,
+            event_loop=event_loop,
+        )
+        self.assertFalse(timed_out)
+        self.assertEqual(d.strbuf.getvalue(), "012")
+
 
     def test_cancel_subprocess(self):
         """Show how to cancel a subprocess."""
@@ -100,13 +139,13 @@ class TestTasks(unittest.TestCase):
             task = event_loop.create_task(_sleep(300))
             events.append(1)
 
-            await asyncio.sleep(5)
+            await asyncio.sleep(1)
             events.append(2)
 
             task.cancel()
             events.append(3)
 
-            await asyncio.sleep(5)
+            await asyncio.sleep(1)
             events.append(5)
 
         event_loop.run_until_complete(_main())
